@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ZhihuDaily</string>
+    <string name="NEWS">news</string>
+    <string name="LIST_TYPE">listType</string>
+</resources>
