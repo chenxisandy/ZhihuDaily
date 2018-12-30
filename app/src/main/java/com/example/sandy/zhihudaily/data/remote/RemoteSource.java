@@ -1,7 +1,10 @@
 package com.example.sandy.zhihudaily.data.remote;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
@@ -92,25 +95,26 @@ public class RemoteSource implements NewsDataSource.Remote, NewsDataSource.Glide
     //此处对应的是detail list部分
     @Override
     public void loadDetail(final News news, final NewsDataSource.DetailListener detailListener) {  //在此处应该包括把东西给presenter->listener,所以说presenter与model通信是listener
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     // TODO: 2018/12/17 看看要不要手动分段
-                    List<Unit> unitList = null;
+//                    List<Unit> unitList = new ArrayList<>();
                     Document dc = Jsoup.connect("https://daily.zhihu.com" + news.getHref()).get();      //得到详情界面的网址
                     Elements elements = dc.select("p, img.content-image");
                     for (int i = 0; i < elements.size(); i++) {
                         String picHref = elements.get(i).attr("src");
                         String para = elements.get(i).text();
                         if (para != null && para.length() > 0) {
-                            unitList.add(new Unit(para, Value.PARA));
+                            news.getContentList().add(new Unit(para, Value.PARA));
                         } else {
-                            unitList.add(new Unit(picHref, Value.HREF));    //在presenter中再转变为image
+                            news.getContentList().add(new Unit(picHref, Value.HREF));    //在presenter中再转变为image
                         }
-                        detailListener.onLoadDetail();
                     }
-                    news.setContentList(unitList);
+                    detailListener.onLoadDetail();        //不可在此操作UI,因此它里面必须支持改UI有handle
+//                    news.setContentList(unitList);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -146,9 +150,9 @@ public class RemoteSource implements NewsDataSource.Remote, NewsDataSource.Glide
 
     }
     @Override
-    public void loadPic(String address, ImageView view, final Unit unit) {       //在presenter中可用，这句没什么问题
-        Glide.with(view.getContext()).load(address).into(view);
-        getBitmap(view.getContext(), address, new NewsDataSource.GlideBitmapListener() {
+    public void loadPic(String address, Context context, final Unit unit) {       //在presenter中可用，这句没什么问题
+//        Glide.with(view.getContext()).load(address).into(view);
+        getBitmap(context, address, new NewsDataSource.GlideBitmapListener() {
             @Override
             public void getBitmapCallback(Bitmap bitmap) {
                 unit.setImg(bitmap);        //把图片加载到里面，在你显示出来时也顺便加载出来,缓存在内存里面，虽然感觉这样占内存有点坑
@@ -170,6 +174,7 @@ public class RemoteSource implements NewsDataSource.Remote, NewsDataSource.Glide
 //                    }
 //                });
         //因为上面那个不能在其他线程运行，因此我们换个线程
+        // TODO: 2018/12/22 该处在子线程运行
         try {
             Bitmap bitmap = Glide.with(context)
                     .load(uri)
@@ -177,10 +182,9 @@ public class RemoteSource implements NewsDataSource.Remote, NewsDataSource.Glide
                     .centerCrop()
                     .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
                     .get();
+            if (listener != null)
             listener.getBitmapCallback(bitmap);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
     }

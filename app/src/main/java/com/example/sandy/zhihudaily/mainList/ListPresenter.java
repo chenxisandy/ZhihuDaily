@@ -1,5 +1,6 @@
 package com.example.sandy.zhihudaily.mainList;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -16,10 +17,12 @@ public class ListPresenter implements ListContract.Presenter {
 
     private ListFragView view;
 
-    private NewsDataSource remoteRepo;
+    private NewsDataSource resourceRepo;
 
     private static final int CHANGE_FRAG = 1;
 
+
+    @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -32,9 +35,9 @@ public class ListPresenter implements ListContract.Presenter {
         }
     };
 
-    ListPresenter(ListFragView view, NewsDataSource remoteRepo) {
+    ListPresenter(ListFragView view, NewsDataSource resourceRepo) {
         this.view = view;
-        this.remoteRepo = remoteRepo;
+        this.resourceRepo = resourceRepo;
         view.setPresenter(this);
     }
 
@@ -60,7 +63,7 @@ public class ListPresenter implements ListContract.Presenter {
     @Override
     public void loadNewsList(final NewsDataSource.FragChangeListener fragChangeListener, Context context) {
         try {
-            remoteRepo.onNewsLoaded(new NewsDataSource.DataListener() {
+            resourceRepo.onNewsLoaded(new NewsDataSource.DataListener() {
                 @Override
                 public void onLoad(List<News> newsList) {
                     fragChangeListener.changeFrag();
@@ -88,7 +91,7 @@ public class ListPresenter implements ListContract.Presenter {
     @Override
     public void refreshList(Context context) {
         try {
-            remoteRepo.onNewsLoaded(new NewsDataSource.DataListener() {
+            resourceRepo.onNewsLoaded(new NewsDataSource.DataListener() {
                 @Override
                 public void onLoad(List<News> newsList) {
                    view.setList(newsList);
@@ -107,12 +110,12 @@ public class ListPresenter implements ListContract.Presenter {
 
     @Override
     public News getNews(int index) {    //得到news实际上调用model里面的东西
-        return remoteRepo.getNews(index);
+        return resourceRepo.getNews(index);
     }
 
     @Override
     public int getIndex(News news) {    //同上
-        return remoteRepo.getIndex(news);
+        return resourceRepo.getIndex(news);
     }
 
     /*以下继承的是listener的东西*/

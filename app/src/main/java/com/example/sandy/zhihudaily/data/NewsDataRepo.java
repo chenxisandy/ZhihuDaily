@@ -2,7 +2,6 @@ package com.example.sandy.zhihudaily.data;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.widget.ImageView;
 
 import com.example.sandy.zhihudaily.util.Value;
 
@@ -39,7 +38,7 @@ public class NewsDataRepo implements NewsDataSource {
     @Override
     public void onNewsLoaded(DataListener listener, Context context) throws IOException {
         if (type == Value.MAIN_LIST) {      //作为管控的人管理各个东西
-            ((LoadNewsCallback)mRemoteRepo).onNewsLoaded(listener, context);
+            ((LoadNewsCallback) mRemoteRepo).onNewsLoaded(listener, context);
         } else {
             mLocalRepo.setListAdapter(listener);
         }
@@ -66,7 +65,7 @@ public class NewsDataRepo implements NewsDataSource {
 
     @Override
     public void loadDetail(News news, DetailListener listener) {
-        if (news.getContentList() != null) {
+        if (news.getContentList().size() > 0) {
             return;     //如果曾经缓存过了就无需再加载
         }
         if (type == Value.MAIN_LIST) {
@@ -77,19 +76,19 @@ public class NewsDataRepo implements NewsDataSource {
 
     @Override
     public void changeNews(News news) {
-        if (type == Value.MAIN_LIST) {
+        if (news.isStar()) {        //如果已经转变成了star
             mRemoteRepo.changeNews(news);
             type = Value.SAVE_LIST;
         } else {
-            mRemoteRepo.changeNews(news);
+            mLocalRepo.changeNews(news);
             type = Value.MAIN_LIST;
         }
     }
 
     @Override
-    public void loadPic(String address, ImageView view, @Nullable Unit unit) {
+    public void loadPic(String address, Context context, @Nullable Unit unit) {
         if (type == Value.MAIN_LIST)
-        mRemoteRepo.loadPic(address, view, unit);
+            mRemoteRepo.loadPic(address, context, unit);
     }
 
     public Value getType() {

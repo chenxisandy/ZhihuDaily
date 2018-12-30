@@ -1,5 +1,6 @@
 package com.example.sandy.zhihudaily.listFrag;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -15,7 +16,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.sandy.zhihudaily.R;
 import com.example.sandy.zhihudaily.data.News;
+import com.example.sandy.zhihudaily.data.Unit;
 import com.example.sandy.zhihudaily.detailnews.DetailActivity;
+import com.example.sandy.zhihudaily.util.Value;
 
 import java.util.List;
 
@@ -25,8 +28,10 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
 
     private Context mContext;
 
-    NewsAdapter(List<News> mNewsList) {
+    private Value type;
+    NewsAdapter(List<News> mNewsList, Value type) {
         this.mNewsList = mNewsList;
+        this.type = type;
     }
 
 //    @Override
@@ -49,6 +54,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         ImageView img;
 
         CardView cardView;
+
         ViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -67,14 +73,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
             mContext = viewGroup.getContext();
         }
         View view = LayoutInflater.from(mContext).inflate(R.layout.news_item, viewGroup, false);
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, @SuppressLint("RecyclerView") final int i) {
         //News news = mNewsList.get(viewHolder.getAdapterPosition());
-        News news = mNewsList.get(i);
+        final News news = mNewsList.get(i);
         if (news.getImgTitle() != null) {
             viewHolder.img.setImageBitmap(news.getImgTitle());
         }
@@ -83,7 +88,8 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, DetailActivity.class);    //ListFragment 不行,只需要传个news就行
-                intent.putExtra(mContext.getString(R.string.NEWS), mNewsList.get(i));   //只能这样，因为我不知道怎么传i过去
+                intent.putExtra(mContext.getString(R.string.NEWS_INDEX), i);   //只能这样，因为我不知道怎么传i过去,只需要传指针，便可以获得我们的news
+                intent.putExtra(mContext.getString(R.string.TYPE), type);
                 mContext.startActivity(intent);
             }
         });

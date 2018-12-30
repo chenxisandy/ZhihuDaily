@@ -54,7 +54,7 @@ public interface NewsDataSource {
 
     void changeNews(News news); //改状态在收藏与不收藏之间
 
-    void loadPic(String address, ImageView view, @Nullable Unit unit);
+    void loadPic(String address, Context context, @Nullable Unit unit);
 
     interface Remote {
         News getNews(int index);
@@ -67,7 +67,7 @@ public interface NewsDataSource {
 
         void changeNews(News news); //改状态在收藏与不收藏之间
 
-        void loadPic(String address, ImageView view, @Nullable Unit unit);
+        void loadPic(String address, Context context, @Nullable Unit unit);
     }
 
     interface Local {

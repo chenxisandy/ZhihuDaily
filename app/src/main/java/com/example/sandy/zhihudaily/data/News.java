@@ -18,11 +18,12 @@ public class News extends DataSupport implements Serializable {
 
     private String imgHref;
 
-    private boolean isStar;
+    private boolean isStar;     //大哥，这个要用到啊
 
     private List<Unit> contentList;
 
     private Bitmap imgTitle;
+
 
     public void setImgTitle(Bitmap imgTitle) {
         this.imgTitle = imgTitle;

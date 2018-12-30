@@ -1,5 +1,6 @@
 package com.example.sandy.zhihudaily.detailnews;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,9 +26,9 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
     private LinearLayout linearLayout;
 
-    private int isInLocal;  //小于0就不在local
-
     private ImageView imageView;
+
+    private Value RepoType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +43,9 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         imageView = findViewById(R.id.star);
         imageView.setOnClickListener(this);
         linearLayout = findViewById(R.id.view_group);
-        isInLocal = LocalResource.getInstance().getList().indexOf(news);
-//        if (isInLocal < 0) { //当news不属于local时，代表加载remote
-//            Glide.with(this).load(news.getImgHref()).into(imageView);todo how to handle this?
-//            presenter = new DetailPresenter(this, RemoteSource.getInstance());
-//        } else {
-//            presenter = new DetailPresenter(this, LocalResource.getInstance());
-//        }
-        Value type = isInLocal < 0 ? Value.MAIN_LIST : Value.SAVE_LIST;
-        presenter = new DetailPresenter(this, NewsDataRepo.getInstance(RemoteSource.getInstance(), LocalResource.getInstance(), type));
+        presenter = new DetailPresenter(this, NewsDataRepo.getInstance(RemoteSource.getInstance(), LocalResource.getInstance(), RepoType));
         presenter.loadDetail();     //加载一波数据
-        //showStar(); 已经在listener里面完成，只有加载完我们才set这一切
+        //showStar(); 已经在listener里面完成，只有加载完我们才set这一切,所以不需要再写
     }
 
     @Override
@@ -62,7 +55,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
 
     @Override
     public void showStar() {
-        if (isInLocal >= 0) {   //被收藏
+        if (RepoType == Value.SAVE_LIST || news.isStar()) {   //被收藏
             imageView.setBackground(getDrawable(R.drawable.star_yes));
         } else {
             imageView.setBackground(getDrawable(R.drawable.star_no));
@@ -72,7 +65,10 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
     @Override
     public News getNewsFromIntent() {
         Intent intent = getIntent();
-        news = (News) intent.getSerializableExtra(getString(R.string.NEWS));
+        int index = intent.getIntExtra(getString(R.string.NEWS_INDEX), 0);
+        RepoType = (Value) intent.getSerializableExtra(getString(R.string.TYPE));
+//        news = presenter.getNews(index);        //如此确保得到是引用而不是按值传
+        news = RemoteSource.getInstance().getList().get(index);
         return news;
     }
 
@@ -86,7 +82,7 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
                 return textView;
             case IMAGE:
                 ImageView imageView = new ImageView(this);
-                imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 linearLayout.addView(imageView);          //同上
                 return imageView;
                 default:
@@ -94,12 +90,23 @@ public class DetailActivity extends AppCompatActivity implements DetailContract.
         }
     }
 
+    @Override
+    public Context getContext() {
+        return this;
+    }
+
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.star:
-                isInLocal = -isInLocal; //改变状态变符号
+                if (RepoType == Value.MAIN_LIST) {  //改变一下这里的属性状态
+                    RepoType = Value.SAVE_LIST;
+//                    news.setStar(true);       这种事应该交给presenter去做
+                } else {
+                    RepoType = Value.MAIN_LIST;
+//                    news.setStar(false);
+                }
                 presenter.starNews();       //开始改变收藏状态
                 break;
                 default:

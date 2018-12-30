@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">ZhihuDaily</string>
-    <string name="NEWS">news</string>
+    <string name="NEWS_INDEX">newsIndex</string>
     <string name="LIST_TYPE">listType</string>
+    <string name="TYPE">type</string>
+    <string name="STAR">收藏</string>
+    <string name="LOGIN">登陆</string>
 </resources>

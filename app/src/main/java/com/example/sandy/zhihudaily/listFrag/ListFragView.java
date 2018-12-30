@@ -15,4 +15,6 @@ public interface ListFragView {
     void setList(List<News> newsList); //加载来得到list
 
     void setPresenter(ListContract.Presenter presenter);
+
+    void notifyChange();
 }
